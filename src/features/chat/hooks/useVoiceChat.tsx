@@ -38,7 +38,7 @@ const useVoiceChat = () => {
     setIsConnected(true);
 
     // TODO: Remove this
-    return;
+    // return;
     await wavRecorder.begin();
     await wavStreamPlayer.connect();
     await client.connect();

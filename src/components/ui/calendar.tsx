@@ -1,6 +1,13 @@
 "use client";
 import React, { useEffect } from "react";
 
+// TODO: move this to a global type declaration
+declare global {
+  interface Window {
+    Calendly?: any;
+  }
+}
+
 const Calendar: React.FC = () => {
   useEffect(() => {
     // Initialize Calendly widget

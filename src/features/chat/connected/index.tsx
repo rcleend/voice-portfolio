@@ -19,7 +19,7 @@ const ConnectedChat: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-between p-4 h-full w-full max-w-[600px]">
       <div></div>
-      <div className="relative flex flex-col items-center w-full ">
+      <div className="relative flex flex-col items-center w-full">
         <Avatar
           isTalking={isTalking}
           isConnected={isConnected}

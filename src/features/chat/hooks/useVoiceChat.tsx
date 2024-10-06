@@ -15,8 +15,8 @@ const useVoiceChat = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [currentTool, setCurrentTool] = useState<ReactNode | null>(
     // <Calendar />
-    <Resume />
-    // null
+    // <Resume />
+    null
   );
   const [isTalking, setIsTalking] = useState(false);
 
@@ -44,7 +44,7 @@ const useVoiceChat = () => {
     setIsConnected(true);
 
     // TODO: Remove this
-    return;
+    // return;
     await wavRecorder.begin();
     await wavStreamPlayer.connect();
     await client.connect();

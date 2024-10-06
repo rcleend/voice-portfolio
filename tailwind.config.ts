@@ -57,6 +57,21 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        "sleep-z": {
+          "0%, 100%": { opacity: "0", transform: "translateY(10px)" },
+          "50%": { opacity: "1", transform: "translateY(0)" },
+          "75%": { opacity: "0", transform: "translateY(5px)" },
+        },
+      },
+      animation: {
+        "sleep-z1": "sleep-z 3s infinite",
+        "sleep-z2": "sleep-z 3s infinite 0.5s",
+        "sleep-z3": "sleep-z 3s infinite 1s",
+        "complex-eye-movement": "complex-eye-movement 8s linear infinite",
+        "talking-head-movement":
+          "talking-head-movement 3s ease-in-out infinite",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

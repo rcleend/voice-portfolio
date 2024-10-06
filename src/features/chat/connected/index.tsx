@@ -3,7 +3,7 @@ import useVoiceChat from "../hooks/useVoiceChat";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import useMarvinAvatar from "../hooks/useMarvinAvatar";
-import { Mic, Volume2 } from "lucide-react";
+import { Mic, Power, Volume2 } from "lucide-react";
 import CurvedText from "@/components/ui/curvedText";
 
 const ConnectedChat: React.FC = () => {
@@ -17,16 +17,15 @@ const ConnectedChat: React.FC = () => {
     currentTool,
   } = useVoiceChat();
 
-  const marvinAvatar = useMarvinAvatar({
-    isTalking,
-    isConnected,
-    isRecording,
-  });
-
   return (
     <div className="flex flex-col items-center justify-between p-4 h-full">
-      <div className="flex flex-col items-center">
-        <Avatar {...marvinAvatar} />
+      <div></div>
+      <div className="flex flex-col items-center w-full">
+        <Avatar
+          isTalking={isTalking}
+          isConnected={isConnected}
+          isRecording={isRecording}
+        />
         {currentTool}
       </div>
 
@@ -38,16 +37,19 @@ const ConnectedChat: React.FC = () => {
                 className="bg-red-400 hover:bg-red-500 text-white w-20 h-20 rounded-full flex items-center justify-center"
                 onClick={connectConversation}
               >
-                <Volume2 className="w-6 h-6" />
+                <Power className="w-6 h-6" />
               </Button>
               <CurvedText text={"Wake me up..."} />
             </>
           ) : (
             <>
               <Button
-                className="bg-yellow-400 hover:bg-yellow-500 text-white w-20 h-20 rounded-full flex items-center justify-center"
+                className="bg-yellow-500 hover:bg-yellow-400 text-white w-20 h-20 rounded-full flex items-center justify-center select-none"
                 onMouseDown={startRecording}
                 onMouseUp={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                onContextMenu={(e) => e.preventDefault()}
               >
                 <Mic className="w-6 h-6" />
               </Button>

@@ -65,13 +65,13 @@ const useVoiceChat = () => {
   }, []);
 
   const startRecording = async () => {
-    if (!clientRef.current) return;
+    if (!clientRef.current || isRecording) return;
     setIsRecording(true);
     const { current: client } = clientRef;
     const { current: wavRecorder } = wavRecorderRef;
     const { current: wavStreamPlayer } = wavStreamPlayerRef;
 
-    const trackSampleOffset = await wavStreamPlayer.interrupt();
+    const trackSampleOffset = wavStreamPlayer.interrupt();
     if (trackSampleOffset?.trackId) {
       const { trackId, offset } = trackSampleOffset;
       client.cancelResponse(trackId, offset);
@@ -80,7 +80,7 @@ const useVoiceChat = () => {
   };
 
   const stopRecording = async () => {
-    if (!clientRef.current) return;
+    if (!clientRef.current || !isRecording) return;
     setIsRecording(false);
     const { current: client } = clientRef;
     const { current: wavRecorder } = wavRecorderRef;
@@ -172,13 +172,14 @@ const useVoiceChat = () => {
         );
         item.formatted.file = wavFile;
 
-        // Calculate the duration of the audio in milliseconds
-        const audioDurationMs = (item.formatted.audio.length / 24000) * 1000;
-
-        // Set a timeout to set isTalking to false after the audio finishes
-        setTimeout(() => {
-          setIsTalking(false);
-        }, audioDurationMs);
+        // Set a timeout to set isTalking to false after Marvin's audio finishes
+        if (item.role === "assistant") {
+          // Calculate the duration of the audio in milliseconds
+          const audioDurationMs = (item.formatted.audio.length / 24000) * 1000;
+          setTimeout(() => {
+            setIsTalking(false);
+          }, audioDurationMs);
+        }
       }
     });
 

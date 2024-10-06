@@ -5,13 +5,19 @@ import { RealtimeClient } from "@openai/realtime-api-beta";
 import useApiKey from "./useApiKey";
 import { instructions } from "@/lib/prompt";
 import { ReactNode } from "react";
+import Resume from "@/components/ui/resume";
+import Calendar from "@/components/ui/calendar";
 
 const useVoiceChat = () => {
   const { apiKey } = useApiKey();
   const [canPushToTalk] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [currentTool, setCurrentTool] = useState<ReactNode | null>(null);
+  const [currentTool, setCurrentTool] = useState<ReactNode | null>(
+    // <Calendar />
+    <Resume />
+    // null
+  );
   const [isTalking, setIsTalking] = useState(false);
 
   const startTimeRef = useRef(new Date().toISOString());
@@ -38,7 +44,7 @@ const useVoiceChat = () => {
     setIsConnected(true);
 
     // TODO: Remove this
-    // return;
+    return;
     await wavRecorder.begin();
     await wavStreamPlayer.connect();
     await client.connect();
@@ -118,17 +124,27 @@ const useVoiceChat = () => {
     // );
     client.addTool(
       {
+        name: "good_bye",
+        description:
+          "Use this tool whenever the user says goodbye and wants to end the conversation.",
+        parameters: {},
+      },
+      async () => {
+        setTimeout(() => {
+          setCurrentTool(null);
+          disconnectConversation();
+        }, 4000);
+        return { ok: true };
+      }
+    );
+    client.addTool(
+      {
         name: "show_calender",
         description: "Shows the user's calender.",
         parameters: {},
       },
       async () => {
-        setCurrentTool(
-          <div className="bg-white p-4 rounded-md">
-            <h2 className="text-lg font-bold">Calender</h2>
-            <p>Here is the calender of the user.</p>
-          </div>
-        );
+        setCurrentTool(<Calendar />);
         return { ok: true };
       }
     );
@@ -139,12 +155,7 @@ const useVoiceChat = () => {
         parameters: {},
       },
       async () => {
-        setCurrentTool(
-          <div className="bg-white p-4 rounded-md">
-            <h2 className="text-lg font-bold">Resume</h2>
-            <p>Here is the resume of the user.</p>
-          </div>
-        );
+        setCurrentTool(<Resume />);
 
         return { ok: true };
       }

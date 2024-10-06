@@ -2,8 +2,7 @@ import React from "react";
 import useVoiceChat from "../hooks/useVoiceChat";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import useMarvinAvatar from "../hooks/useMarvinAvatar";
-import { Mic, Power, Volume2 } from "lucide-react";
+import { Mic, Power } from "lucide-react";
 import CurvedText from "@/components/ui/curvedText";
 
 const ConnectedChat: React.FC = () => {
@@ -18,18 +17,20 @@ const ConnectedChat: React.FC = () => {
   } = useVoiceChat();
 
   return (
-    <div className="flex flex-col items-center justify-between p-4 h-full">
+    <div className="flex flex-col items-center justify-between p-4 h-full w-full max-w-[600px]">
       <div></div>
-      <div className="flex flex-col items-center w-full">
+      <div className="relative flex flex-col items-center w-full ">
         <Avatar
           isTalking={isTalking}
           isConnected={isConnected}
           isRecording={isRecording}
+          shrink={currentTool ? true : false}
         />
-        {currentTool}
+        {currentTool && <div className="w-full h-96">{currentTool}</div>}
       </div>
+      <div></div>
 
-      <div className="mb-24 relative">
+      <div className="fixed bottom-0 left-0 right-0 pb-20 flex justify-center">
         <div className="relative">
           {!isConnected ? (
             <>

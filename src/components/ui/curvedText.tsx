@@ -12,7 +12,7 @@ const CurvedText: React.FC<CurvedTextProps> = ({ text }) => {
       height="70"
     >
       <path id="curve" d="M10,12 Q80,45 150,12" fill="none" />
-      <text className="text-xl font-bold fill-current">
+      <text className="text-xl font-bold fill-current select-none">
         <textPath xlinkHref="#curve" startOffset="50%" textAnchor="middle">
           {text}
         </textPath>

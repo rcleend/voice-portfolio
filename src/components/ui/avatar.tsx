@@ -1,13 +1,16 @@
 import useMarvinAvatar from "@/features/chat/hooks/useMarvinAvatar";
+import { cn } from "@/lib/utils";
 
 export function Avatar({
   isTalking,
   isConnected,
   isRecording,
+  shrink = false,
 }: {
   isTalking: boolean;
   isConnected: boolean;
   isRecording: boolean;
+  shrink?: boolean;
 }) {
   const { state } = useMarvinAvatar({
     isTalking,
@@ -15,7 +18,14 @@ export function Avatar({
     isRecording,
   });
   return (
-    <div className="relative w-2/3 max-w-[450px] aspect-square">
+    <div
+      className={cn(
+        `relative aspect-square`,
+        shrink
+          ? "absolute -top-[30%] w-1/3 max-w-[150px]"
+          : "w-2/3 max-w-[450px]"
+      )}
+    >
       <svg
         version="1.2"
         xmlns="http://www.w3.org/2000/svg"
@@ -96,21 +106,21 @@ export function Avatar({
               <text
                 x="20"
                 y="90"
-                className="text-4xl fill-black animate-sleep-z1 opacity-0"
+                className="text-4xl fill-black animate-sleep-z1 opacity-0 select-none"
               >
                 z
               </text>
               <text
                 x="40"
                 y="70"
-                className="text-5xl fill-black animate-sleep-z2 opacity-0"
+                className="text-5xl fill-black animate-sleep-z2 opacity-0 select-none"
               >
                 z
               </text>
               <text
                 x="65"
                 y="50"
-                className="text-6xl fill-black animate-sleep-z3 opacity-0"
+                className="text-6xl fill-black animate-sleep-z3 opacity-0 select-none"
               >
                 z
               </text>

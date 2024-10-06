@@ -34,18 +34,7 @@ const useMarvinAvatar = ({
     );
   }, [isConnected, isRecording, isTalking]);
 
-  const avatarSrc = useMemo(() => {
-    const stateToImageMap: Record<MarvinState, string> = {
-      listening: "/images/marvin.png",
-      thinking: "/images/marvin.png",
-      disconnected: "/images/marvin.png",
-      talking: "/images/marvin.png",
-      idle: "/images/marvin.png",
-    };
-    return stateToImageMap[state];
-  }, [state]);
-
-  return { state, avatarSrc };
+  return { state };
 };
 
 export default useMarvinAvatar;

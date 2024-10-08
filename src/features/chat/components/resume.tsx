@@ -16,16 +16,16 @@ const Resume: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="w-full flex h-[50vh]">
       <div className="mx-auto w-full max-w-[30rem] relative flex flex-col">
-        <div className="w-full h-[30rem] bg-white mb-4 shadow-md rounded-3xl relative p-6">
+        <div className="w-full h-[20rem] sm:h-[30rem] bg-white mb-4 shadow-md rounded-3xl relative p-6">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-2 text-gray-500 hover:text-gray-700 focus:outline-none z-10"
+            className="absolute -top-10 lg:top-3 right-3 p-2 text-white  lg:text-gray-500 lg:hover:text-gray-700 focus:outline-none z-10"
           >
             <X className="h-6 w-6" />
           </button>
           <div className="flex items-center justify-center h-full">
             <div
-              className="w-11/12 h-5/6 rounded-2xl cursor-pointer relative"
+              className="h-[17rem] w-[20rem] sm:h-[23rem] sm:w-[25rem] rounded-2xl cursor-pointer relative"
               style={{
                 backgroundImage: "url('/images/resume_thumbnail.svg')",
                 backgroundSize: "contain",
@@ -34,7 +34,7 @@ const Resume: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               }}
               onClick={handleImageClick}
             >
-              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center rounded-2xl lg:opacity-0 hover:opacity-100 transition-opacity duration-300">
                 <Download className="h-12 w-12 text-white" />
               </div>
             </div>

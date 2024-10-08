@@ -5,8 +5,8 @@ import { RealtimeClient } from "@openai/realtime-api-beta";
 import useApiKey from "./useApiKey";
 import { instructions } from "@/lib/prompt";
 import { ReactNode } from "react";
-import Resume from "@/components/ui/resume";
-import Calendar from "@/components/ui/calendar";
+import Resume from "@/features/chat/components/resume";
+import ScheduleButton from "@/features/chat/components/scheduleButton";
 
 const useVoiceChat = () => {
   const { apiKey } = useApiKey();
@@ -14,10 +14,10 @@ const useVoiceChat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [currentTool, setCurrentTool] = useState<ReactNode | null>(
-    // <Calendar />
-    // <Resume />
-    null
+    <Resume onClose={() => setCurrentTool(null)} />
   );
+  // <ScheduleButton />
+  // null
   const [isTalking, setIsTalking] = useState(false);
 
   const startTimeRef = useRef(new Date().toISOString());
@@ -43,8 +43,7 @@ const useVoiceChat = () => {
     startTimeRef.current = new Date().toISOString();
     setIsConnected(true);
 
-    // TODO: Remove this
-    // return;
+    return;
     await wavRecorder.begin();
     await wavStreamPlayer.connect();
     await client.connect();
@@ -70,30 +69,6 @@ const useVoiceChat = () => {
     wavStreamPlayer.interrupt();
   }, []);
 
-  const startRecording = async () => {
-    if (!clientRef.current || isRecording) return;
-    setIsRecording(true);
-    const { current: client } = clientRef;
-    const { current: wavRecorder } = wavRecorderRef;
-    const { current: wavStreamPlayer } = wavStreamPlayerRef;
-
-    const trackSampleOffset = wavStreamPlayer.interrupt();
-    if (trackSampleOffset?.trackId) {
-      const { trackId, offset } = trackSampleOffset;
-      client.cancelResponse(trackId, offset);
-    }
-    await wavRecorder.record((data) => client.appendInputAudio(data.mono));
-  };
-
-  const stopRecording = async () => {
-    if (!clientRef.current || !isRecording) return;
-    setIsRecording(false);
-    const { current: client } = clientRef;
-    const { current: wavRecorder } = wavRecorderRef;
-    await wavRecorder.pause();
-    client.createResponse();
-  };
-
   /**
    * Core RealtimeClient and audio capture setup
    * Set all of our instructions, tools, events and more
@@ -110,6 +85,7 @@ const useVoiceChat = () => {
       instructions,
       voice: "echo",
       input_audio_transcription: { model: "whisper-1" },
+      turn_detection: { type: "server_vad" },
     });
 
     // client.addTool(
@@ -139,12 +115,12 @@ const useVoiceChat = () => {
     );
     client.addTool(
       {
-        name: "show_calender",
-        description: "Shows the user's calender.",
+        name: "schedule_call",
+        description: "Shows a button which can be used to schedule a call.",
         parameters: {},
       },
       async () => {
-        setCurrentTool(<Calendar />);
+        setCurrentTool(<ScheduleButton />);
         return { ok: true };
       }
     );
@@ -155,7 +131,7 @@ const useVoiceChat = () => {
         parameters: {},
       },
       async () => {
-        setCurrentTool(<Resume />);
+        setCurrentTool(<Resume onClose={() => setCurrentTool(null)} />);
 
         return { ok: true };
       }
@@ -200,6 +176,13 @@ const useVoiceChat = () => {
     };
   }, [apiKey]);
 
+  const sendTextMessage = (input: string) => {
+    if (!clientRef.current) return;
+    clientRef.current.sendUserMessageContent([
+      { type: "input_text", text: input },
+    ]);
+  };
+
   return {
     canPushToTalk,
     isRecording,
@@ -207,9 +190,8 @@ const useVoiceChat = () => {
     isTalking,
     connectConversation,
     disconnectConversation,
-    startRecording,
-    stopRecording,
     currentTool,
+    sendTextMessage,
   };
 };
 

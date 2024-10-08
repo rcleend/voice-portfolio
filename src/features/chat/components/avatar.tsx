@@ -20,10 +20,8 @@ export function Avatar({
   return (
     <div
       className={cn(
-        `relative aspect-square`,
-        shrink
-          ? "absolute -top-[30%] w-1/3 max-w-[150px]"
-          : "w-2/3 max-w-[450px]"
+        `relative aspect-square transition-all duration-1000 linear`,
+        shrink ? "absolute -top-36 w-1/2 max-w-[200px]" : "w-2/3 max-w-[450px]"
       )}
     >
       <svg

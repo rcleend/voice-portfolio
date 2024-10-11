@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import useVoiceChat from "../hooks/useVoiceChat";
 import { Avatar } from "@/features/chat/components/avatar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,12 +7,13 @@ import ConnectButton from "../components/connectButton";
 
 const ConnectedChat: React.FC = () => {
   const {
-    isRecording,
     isConnected,
     isTalking,
+    isMuted,
     connectConversation,
     currentTool,
     sendTextMessage,
+    toggleMute,
   } = useVoiceChat();
 
   return (
@@ -22,7 +23,6 @@ const ConnectedChat: React.FC = () => {
         <Avatar
           isTalking={isTalking}
           isConnected={isConnected}
-          isRecording={isRecording}
           shrink={currentTool ? true : false}
         />
 
@@ -76,22 +76,13 @@ const ConnectedChat: React.FC = () => {
               <ConnectButton onConnectClick={connectConversation} />
             </>
           ) : (
-            <Menu onMenuItemClick={sendTextMessage} />
-            // <>
-            /* <button
-                className="bg-yellow-500 hover:bg-yellow-400 text-white w-20 h-20 rounded-full flex items-center justify-center select-none"
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                onContextMenu={(e) => e.preventDefault()}
-              >
-                <Mic className="w-6 h-6" />
-              </button>
-              <CurvedText
-                text={isRecording ? "Recording..." : "Hold to talk"}
-              /> */
-            // </>
+            <>
+              <Menu
+                onMenuItemClick={sendTextMessage}
+                isMuted={isMuted}
+                toggleMute={toggleMute}
+              />
+            </>
           )}
         </div>
       </div>

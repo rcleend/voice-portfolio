@@ -42,7 +42,7 @@ const Resume: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
         <div className="w-full flex items-center justify-center space-x-5">
           <SocialButton
-            href="https://github.com/rcleende"
+            href="https://github.com/rcleend"
             text="GITHUB"
             icon={<GitHubLogoIcon />}
             bgColor="bg-[#24292e]"

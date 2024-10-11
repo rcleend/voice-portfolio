@@ -2,15 +2,18 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMouseMove } from "@/features/chat/hooks/useMouseAnimation";
 import CurvedText from "./curvedText";
+import { Mic, MicOff, Volume2 } from "lucide-react";
 
 const MenuItem = ({
   item,
   index,
   onMenuItemClick,
+  isMuteOption = false,
 }: {
   item: string;
   index: number;
   onMenuItemClick: (input: string) => void;
+  isMuteOption?: boolean;
 }) => {
   const menuItemRef = useRef<HTMLDivElement>(null);
   const { isHovered, position, handleMouseEnter, handleMouseLeave } =
@@ -47,9 +50,9 @@ const MenuItem = ({
       <motion.div
         ref={menuItemRef}
         id="menu-item"
-        className={`w-max text-center text-lg mb-4  bg-white rounded-full shadow-md transition-all duration-300 ease-out ${
-          isHovered ? "shadow-lg scale-110" : ""
-        }`}
+        className={`w-max text-center text-lg mb-4 rounded-full shadow-md transition-all duration-300 ease-out ${
+          isMuteOption ? "bg-gray-800" : "bg-white"
+        } ${isHovered ? "shadow-lg scale-110" : ""}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         style={{
@@ -62,8 +65,19 @@ const MenuItem = ({
           onClick={() => {
             onMenuItemClick(item);
           }}
-          className="text-black font-semibold block px-4 py-2 cursor-pointer"
+          className={`font-semibold block px-4 py-2 cursor-pointer ${
+            isMuteOption ? "text-white" : "text-black"
+          } flex items-center`}
         >
+          {isMuteOption && (
+            <span className="mr-2">
+              {item.startsWith("Unmute") ? (
+                <Mic size={16} />
+              ) : (
+                <MicOff size={16} />
+              )}
+            </span>
+          )}
           {item}
         </span>
       </motion.div>
@@ -71,9 +85,11 @@ const MenuItem = ({
   );
 };
 
-const Menu: React.FC<{ onMenuItemClick: (input: string) => void }> = ({
-  onMenuItemClick,
-}) => {
+const Menu: React.FC<{
+  onMenuItemClick: (input: string) => void;
+  isMuted: boolean;
+  toggleMute: () => void;
+}> = ({ onMenuItemClick, isMuted, toggleMute }) => {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -102,15 +118,10 @@ const Menu: React.FC<{ onMenuItemClick: (input: string) => void }> = ({
     };
   }, [isOpen]);
 
-  const iconVariants = {
-    closed: { rotate: 0 },
-    open: { rotate: 45 },
-  };
-
   const menuItems = [
-    "Who is Roel?",
-    "What is Roel looking for?",
-    "Schedule Meeting",
+    "Can you tell me more about Roel?",
+    "I am a recruiter and I want to hire Roel",
+    "Can I schedule a meeting?",
   ];
 
   return (
@@ -132,6 +143,16 @@ const Menu: React.FC<{ onMenuItemClick: (input: string) => void }> = ({
                 }}
               />
             ))}
+            <MenuItem
+              key={menuItems.length}
+              item={isMuted ? "Use Microphone" : "Mute Microphone"}
+              index={menuItems.length}
+              isMuteOption={true}
+              onMenuItemClick={() => {
+                toggleMute();
+                setIsOpen(false);
+              }}
+            />
           </div>
         )}
       </AnimatePresence>
@@ -150,15 +171,13 @@ const Menu: React.FC<{ onMenuItemClick: (input: string) => void }> = ({
             : "",
         }}
       >
-        <motion.div
-          className="text-white text-4xl font-bold"
-          animate={isOpen ? "open" : "closed"}
-          variants={iconVariants}
-        >
-          +
-        </motion.div>
+        {isMuted ? (
+          <MicOff className="text-white" size={24} />
+        ) : (
+          <Mic className="text-white" size={24} />
+        )}
       </motion.button>
-      <CurvedText text={"Sound on..."} />
+      <CurvedText text={"Let's talk..."} />
     </div>
   );
 };

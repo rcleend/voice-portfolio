@@ -2,37 +2,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { WavRecorder, WavStreamPlayer } from "../../../lib/wavtools";
 import { RealtimeClient } from "@openai/realtime-api-beta";
-import useApiKey from "./useApiKey";
 import { instructions } from "@/lib/prompt";
 import { ReactNode } from "react";
 import Resume from "@/features/chat/components/resume";
 import ScheduleButton from "@/features/chat/components/scheduleButton";
 
+const RELAY_SERVER_URL: string = process.env.RELAY_SERVER_URL || "";
+
 const useVoiceChat = () => {
-  const { apiKey } = useApiKey();
-  const [canPushToTalk] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [currentTool, setCurrentTool] = useState<ReactNode | null>(
-    <Resume onClose={() => setCurrentTool(null)} />
-  );
-  // <ScheduleButton />
-  // null
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTool, setCurrentTool] = useState<ReactNode | null>(null);
   const [isTalking, setIsTalking] = useState(false);
 
   const startTimeRef = useRef(new Date().toISOString());
   const wavRecorderRef = useRef(new WavRecorder({ sampleRate: 24000 }));
   const wavStreamPlayerRef = useRef(new WavStreamPlayer({ sampleRate: 24000 }));
-  const clientRef = useRef<RealtimeClient | null>(null);
-
-  useEffect(() => {
-    if (apiKey) {
-      clientRef.current = new RealtimeClient({
-        apiKey,
-        dangerouslyAllowAPIKeyInBrowser: true,
-      });
-    }
-  }, [apiKey]);
+  const clientRef = useRef<RealtimeClient>(
+    new RealtimeClient({ url: RELAY_SERVER_URL })
+  );
 
   const connectConversation = useCallback(async () => {
     if (!clientRef.current) return;
@@ -43,44 +31,28 @@ const useVoiceChat = () => {
     startTimeRef.current = new Date().toISOString();
     setIsConnected(true);
 
-    return;
-    await wavRecorder.begin();
-    await wavStreamPlayer.connect();
-    await client.connect();
+    await Promise.all([
+      wavRecorder.begin(),
+      wavStreamPlayer.connect(),
+      client.connect(),
+    ]);
 
     client.sendUserMessageContent([{ type: "input_text", text: "Hello!" }]);
-
-    if (client.getTurnDetectionType() === "server_vad") {
-      await wavRecorder.record((data) => client.appendInputAudio(data.mono));
-    }
   }, []);
 
   const disconnectConversation = useCallback(async () => {
     setIsConnected(false);
-
-    if (clientRef.current) {
-      clientRef.current.disconnect();
-    }
-
-    const { current: wavRecorder } = wavRecorderRef;
-    await wavRecorder.end();
-
-    const { current: wavStreamPlayer } = wavStreamPlayerRef;
-    wavStreamPlayer.interrupt();
+    if (clientRef.current) clientRef.current.disconnect();
+    await wavRecorderRef.current.end();
+    wavStreamPlayerRef.current.interrupt();
   }, []);
 
-  /**
-   * Core RealtimeClient and audio capture setup
-   * Set all of our instructions, tools, events and more
-   */
   useEffect(() => {
     if (!clientRef.current) return;
 
-    // Get refs
     const wavStreamPlayer = wavStreamPlayerRef.current;
     const client = clientRef.current;
 
-    // Set instructions
     client.updateSession({
       instructions,
       voice: "echo",
@@ -88,61 +60,65 @@ const useVoiceChat = () => {
       turn_detection: { type: "server_vad" },
     });
 
-    // client.addTool(
-    //   {
-    //     name: "abuse_prevention",
-    //     description: "Prevents the user from saying harmful things.",
-    //     parameters: {},
-    //   },
-    //   async () => {
-    //     return { ok: true };
-    //   }
-    // );
-    client.addTool(
+    const tools = [
       {
         name: "good_bye",
         description:
           "Use this tool whenever the user says goodbye and wants to end the conversation.",
-        parameters: {},
+        handler: () => {
+          setTimeout(() => {
+            setCurrentTool(null);
+            disconnectConversation();
+          }, 4000);
+          return "Goodbye";
+        },
       },
-      async () => {
-        setTimeout(() => {
-          setCurrentTool(null);
-          disconnectConversation();
-        }, 4000);
-        return { ok: true };
-      }
-    );
-    client.addTool(
       {
         name: "schedule_call",
         description: "Shows a button which can be used to schedule a call.",
-        parameters: {},
+        handler: () => {
+          setCurrentTool(<ScheduleButton />);
+          return { ok: true };
+        },
       },
-      async () => {
-        setCurrentTool(<ScheduleButton />);
-        return { ok: true };
-      }
-    );
-    client.addTool(
       {
         name: "show_resume",
-        description: "Shows the user's resume.",
-        parameters: {},
-      },
-      async () => {
-        setCurrentTool(<Resume onClose={() => setCurrentTool(null)} />);
+        description:
+          "Shows Roel's resume and provides the user with more info about Roel. Use this when they want to know more about Roel.",
+        handler: () => {
+          setCurrentTool(<Resume onClose={() => setCurrentTool(null)} />);
+          return `Do the following:
+1. Tell the user that they can download Roel's resume by clicking on it.
+2. Give a very short introduction about Roel.
 
-        return { ok: true };
-      }
+Context about Roel:
+- Roel is a full-stack engineer with over 4 years of experience specializing in AI-driven web applications
+- He has experience in startups and established companies
+- He is an expert in AI chat interfaces, custom SaaS apps, and LLM agents
+- He has a passion for building products that help people
+- He is currently looking to join a cool product-led start-up or scale-up that uses cutting-edge technology to tackle meaningful problems
+- Languages Roel is proficient with: TypeScript, Python
+- Frameworks Roel is proficient with: React, Next.js, Node.js, Express, Flask
+`;
+        },
+      },
+    ];
+
+    tools.forEach((tool) =>
+      client.addTool(
+        { name: tool.name, description: tool.description, parameters: {} },
+        tool.handler
+      )
     );
 
-    client.on("error", (event: any) => console.error(event));
+    client.on("error", console.error);
     client.on("conversation.interrupted", async () => {
       const trackSampleOffset = wavStreamPlayer.interrupt();
       if (trackSampleOffset?.trackId) {
-        const { trackId, offset } = trackSampleOffset;
-        client.cancelResponse(trackId, offset);
+        client.cancelResponse(
+          trackSampleOffset.trackId,
+          trackSampleOffset.offset
+        );
         setIsTalking(false);
       }
     });
@@ -163,9 +139,7 @@ const useVoiceChat = () => {
         if (item.role === "assistant") {
           // Calculate the duration of the audio in milliseconds
           const audioDurationMs = (item.formatted.audio.length / 24000) * 1000;
-          setTimeout(() => {
-            setIsTalking(false);
-          }, audioDurationMs);
+          setTimeout(() => setIsTalking(false), audioDurationMs);
         }
       }
     });
@@ -174,24 +148,34 @@ const useVoiceChat = () => {
       // cleanup; resets to defaults
       client.reset();
     };
-  }, [apiKey]);
+  }, []);
 
   const sendTextMessage = (input: string) => {
-    if (!clientRef.current) return;
-    clientRef.current.sendUserMessageContent([
+    clientRef.current?.sendUserMessageContent([
       { type: "input_text", text: input },
     ]);
   };
 
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+    if (isMuted) {
+      wavRecorderRef.current.record((data) =>
+        clientRef.current?.appendInputAudio(data.mono)
+      );
+    } else {
+      wavRecorderRef.current.pause();
+    }
+  };
+
   return {
-    canPushToTalk,
-    isRecording,
     isConnected,
     isTalking,
+    isMuted,
     connectConversation,
     disconnectConversation,
     currentTool,
     sendTextMessage,
+    toggleMute,
   };
 };
 

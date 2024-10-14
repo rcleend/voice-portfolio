@@ -102,7 +102,6 @@ export function Avatar({
                 x="20"
                 y="90"
                 className="text-4xl fill-black animate-sleep-z1 opacity-0 select-none"
-                style={{ fontFamily: "Comic Sans MS, cursive" }}
               >
                 z
               </text>
@@ -110,7 +109,6 @@ export function Avatar({
                 x="40"
                 y="70"
                 className="text-5xl fill-black animate-sleep-z2 opacity-0 select-none"
-                style={{ fontFamily: "Comic Sans MS, cursive" }}
               >
                 z
               </text>
@@ -118,7 +116,6 @@ export function Avatar({
                 x="65"
                 y="50"
                 className="text-6xl fill-black animate-sleep-z3 opacity-0 select-none"
-                style={{ fontFamily: "Comic Sans MS, cursive" }}
               >
                 z
               </text>

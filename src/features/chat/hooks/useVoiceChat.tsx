@@ -65,7 +65,8 @@ const useVoiceChat = () => {
         name: "good_bye",
         description:
           "Use this tool whenever the user says goodbye and wants to end the conversation.",
-        handler: () => {
+        parameters: {},
+        handler: async () => {
           setTimeout(() => {
             setCurrentTool(null);
             disconnectConversation();
@@ -76,7 +77,8 @@ const useVoiceChat = () => {
       {
         name: "schedule_call",
         description: "Shows a button which can be used to schedule a call.",
-        handler: () => {
+        parameters: {},
+        handler: async () => {
           setCurrentTool(<ScheduleButton />);
           return { ok: true };
         },
@@ -85,21 +87,13 @@ const useVoiceChat = () => {
         name: "show_resume",
         description:
           "Shows Roel's resume and provides the user with more info about Roel. Use this when they want to know more about Roel.",
-        handler: () => {
+        parameters: {},
+        handler: async () => {
           setCurrentTool(<Resume onClose={() => setCurrentTool(null)} />);
-          return `Do the following:
-1. Tell the user that they can download Roel's resume by clicking on it.
-2. Give a very short introduction about Roel.
-
-Context about Roel:
-- Roel is a full-stack engineer with over 4 years of experience specializing in AI-driven web applications
-- He has experience in startups and established companies
-- He is an expert in AI chat interfaces, custom SaaS apps, and LLM agents
-- He has a passion for building products that help people
-- He is currently looking to join a cool product-led start-up or scale-up that uses cutting-edge technology to tackle meaningful problems
-- Languages Roel is proficient with: TypeScript, Python
-- Frameworks Roel is proficient with: React, Next.js, Node.js, Express, Flask
-`;
+          return {
+            ok: true,
+            // message: "The user can download Roel's resume by clicking on it.",
+          };
         },
       },
     ];

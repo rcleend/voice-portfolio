@@ -92,7 +92,6 @@ const useVoiceChat = () => {
           setCurrentTool(<Resume onClose={() => setCurrentTool(null)} />);
           return {
             ok: true,
-            // message: "The user can download Roel's resume by clicking on it.",
           };
         },
       },
@@ -105,7 +104,14 @@ const useVoiceChat = () => {
       )
     );
 
-    client.on("error", console.error);
+    client.realtime.on("server.error", async (error: unknown) => {
+      console.error(error);
+      alert(
+        "OpenAI is expensive :'( This app ran out of credits. Please try again later."
+      );
+      disconnectConversation();
+    });
+
     client.on("conversation.interrupted", async () => {
       const trackSampleOffset = wavStreamPlayer.interrupt();
       if (trackSampleOffset?.trackId) {
